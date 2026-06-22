@@ -52,7 +52,11 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+    // Menggunakan Credential Manager (Modern Android Standard)
+    implementation("androidx.credentials:credentials:1.2.2")
+    implementation("androidx.credentials:credentials-play-services-auth:1.2.2")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
     // Navigation Compose
     implementation(libs.androidx.navigation.compose)
 

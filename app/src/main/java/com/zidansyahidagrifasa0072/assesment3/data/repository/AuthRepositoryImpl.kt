@@ -1,61 +1,44 @@
 package com.zidansyahidagrifasa0072.assesment3.data.repository
 
-import android.net.Uri
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 import com.zidansyahidagrifasa0072.assesment3.data.model.User
 import com.zidansyahidagrifasa0072.assesment3.data.network.AppNetworkState
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
-    private val firestore: FirebaseFirestore,
-    private val storage: FirebaseStorage
+    private val firestore: FirebaseFirestore
 ) : AuthRepository {
 
     override val currentUser: com.google.firebase.auth.FirebaseUser?
         get() = firebaseAuth.currentUser
 
-    override fun registerUser(
-        name: String,
-        email: String,
-        password: String,
-        imageUri: Uri?
-    ): Flow<AppNetworkState<String>> = flow {
+    override fun signInWithGoogle(idToken: String): Flow<AppNetworkState<String>> = flow {
         emit(AppNetworkState.Loading)
         try {
-            val authResult = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
-            val uid = authResult.user?.uid ?: throw Exception("User ID tidak ditemukan")
+            val credential = GoogleAuthProvider.getCredential(idToken, null)
+            val authResult = firebaseAuth.signInWithCredential(credential).await()
+            val firebaseUser = authResult.user ?: throw Exception("Gagal mendapatkan data user dari Google")
 
-            var imageUrl = ""
-            if (imageUri != null) {
-                val storageRef = storage.reference.child("profile_images/$uid.jpg")
-                storageRef.putFile(imageUri).await()
-                imageUrl = storageRef.downloadUrl.await().toString()
-            }
+            // Ambil data profil dari akun google
+            val uid = firebaseUser.uid
+            val name = firebaseUser.displayName ?: "User WisataKu"
+            val email = firebaseUser.email ?: ""
+            val profileImageUrl = firebaseUser.photoUrl?.toString() ?: ""
 
-            val user = User(uid = uid, name = name, email = email, profileImageUrl = imageUrl)
+            val user = User(uid = uid, name = name, email = email, profileImageUrl = profileImageUrl)
+
+            // Simpan atau update ke Firestore secara otomatis saat login
             firestore.collection("users").document(uid).set(user).await()
 
-            emit(AppNetworkState.Success("Registrasi Berhasil"))
+            emit(AppNetworkState.Success("Login Google Berhasil"))
         } catch (e: Exception) {
-            emit(AppNetworkState.Error(e.localizedMessage ?: "Terjadi kesalahan saat registrasi"))
-        }
-    }
-
-    override fun loginUser(email: String, password: String): Flow<AppNetworkState<String>> = flow {
-        emit(AppNetworkState.Loading)
-        try {
-            firebaseAuth.signInWithEmailAndPassword(email, password).await()
-            emit(AppNetworkState.Success("Login Berhasil"))
-        } catch (e: Exception) {
-            emit(AppNetworkState.Error(e.localizedMessage ?: "Email atau Password salah"))
+            emit(AppNetworkState.Error(e.localizedMessage ?: "Terjadi kesalahan saat masuk dengan Google"))
         }
     }
 
