@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
+
     onLoginSuccess: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
@@ -85,6 +86,7 @@ fun LoginScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
+
             Spacer(modifier = Modifier.height(48.dp))
 
             if (loginState is AppNetworkState.Loading) {
@@ -93,7 +95,7 @@ fun LoginScreen(
                 Button(
                     onClick = {
                         // Ganti dengan WEB CLIENT ID dari Firebase Console -> Authentication -> Sign-In Method -> Google
-                        val webClientId = "YOUR_FIREBASE_WEB_CLIENT_ID.apps.googleusercontent.com"
+                        val webClientId = "360206312548-gc61uhhtrc5g4rhovgortskdn2kfmt51.apps.googleusercontent.com"
 
                         val googleIdOption = GetGoogleIdOption.Builder()
                             .setFilterByAuthorizedAccounts(false)

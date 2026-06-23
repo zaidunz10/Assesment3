@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
@@ -23,8 +24,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -57,12 +60,14 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Jelajah Wisata", fontWeight = FontWeight.Bold) },
+
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         },
+
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onNavigateToAddReview,
@@ -118,7 +123,13 @@ fun HomeScreen(
         }
     }
 }
+fun logoutUser(onLogoutSuccess: () -> Unit) {
+    // 1. Perintah keluar dari Firebase Auth
+    FirebaseAuth.getInstance().signOut()
 
+    // 2. Lempar user kembali ke halaman Login (panggil fungsi navigasi kamu)
+    onLogoutSuccess()
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReviewItem(
