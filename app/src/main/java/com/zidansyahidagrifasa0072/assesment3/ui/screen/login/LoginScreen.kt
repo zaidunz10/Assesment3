@@ -1,6 +1,5 @@
 package com.zidansyahidagrifasa0072.assesment3.ui.screen.login
 
-import android.app.Activity
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -91,10 +90,14 @@ fun LoginScreen(
 
             if (loginState is AppNetworkState.Loading) {
                 CircularProgressIndicator(modifier = Modifier.size(48.dp))
-            } else {
+            } else if (loginState is AppNetworkState.Success) {
+                LaunchedEffect(Unit) {
+                    onLoginSuccess()
+                }
+            }
+            else {
                 Button(
                     onClick = {
-                        // Ganti dengan WEB CLIENT ID dari Firebase Console -> Authentication -> Sign-In Method -> Google
                         val webClientId = "360206312548-gc61uhhtrc5g4rhovgortskdn2kfmt51.apps.googleusercontent.com"
 
                         val googleIdOption = GetGoogleIdOption.Builder()

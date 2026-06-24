@@ -59,7 +59,7 @@ class ReviewRepositoryImpl @Inject constructor(
         trySend(AppNetworkState.Loading)
         val uid = auth.currentUser?.uid ?: ""
 
-       val listener = firestore.collection("reviews")
+        val listener = firestore.collection("reviews")
             .whereEqualTo("userId", uid)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {

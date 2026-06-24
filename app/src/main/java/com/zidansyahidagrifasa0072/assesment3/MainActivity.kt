@@ -17,8 +17,7 @@ class MainActivity : ComponentActivity() {
                 // 1. Buat NavController di sini
                 val navController = rememberNavController()
 
-                // 2. Panggil NavGraph dan oper navController-nya ke sana
-                // JANGAN panggil HomeScreen() langsung di sini!
+
                 NavGraph(navController = navController)
             }
         }

@@ -28,16 +28,13 @@ class AuthRepositoryImpl @Inject constructor(
             val authResult = firebaseAuth.signInWithCredential(credential).await()
             val firebaseUser = authResult.user ?: throw Exception("Gagal mendapatkan data user dari Google")
 
-            // Ambil data profil dari akun google
             val uid = firebaseUser.uid
             val name = firebaseUser.displayName ?: "User WisataKu"
             val email = firebaseUser.email ?: ""
             val profileImageUrl = firebaseUser.photoUrl?.toString() ?: ""
 
             val user = User(uid = uid, name = name, email = email, profileImageUrl = profileImageUrl)
-
-            // Simpan atau update ke Firestore secara otomatis saat login
-            firestore.collection("users").document(uid).set(user).await()
+            firestore.collection("users").document(uid).set(user)
 
             emit(AppNetworkState.Success("Login Google Berhasil"))
         } catch (e: Exception) {

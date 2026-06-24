@@ -1,5 +1,6 @@
 package com.zidansyahidagrifasa0072.assesment3.ui.screen.login
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zidansyahidagrifasa0072.assesment3.data.network.AppNetworkState
@@ -22,6 +23,8 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             authRepository.signInWithGoogle(idToken).collect { state ->
                 _loginState.value = state
+                Log.d("stat", "$state"
+                )
             }
         }
     }

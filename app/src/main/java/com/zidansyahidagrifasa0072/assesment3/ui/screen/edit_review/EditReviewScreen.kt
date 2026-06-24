@@ -101,16 +101,9 @@ fun EditReviewScreen(
 
     // Handler ketika berhasil/gagal Edit
     LaunchedEffect(editState) {
-        // Gunakan local variable untuk mengunci state saat masuk, menghindari interupsi saat di-reset
-        val currentState = editState
-        if (currentState is AppNetworkState.Success) {
-            Toast.makeText(context, "Review berhasil diperbarui", Toast.LENGTH_SHORT).show()
-            delay(3000)
-            onNavigateToHome()
-            viewModel.resetState() // Reset ditaruh PALING AKHIR setelah navigasi aman berjalan
-        } else if (currentState is AppNetworkState.Error) {
-            Toast.makeText(context, currentState.message, Toast.LENGTH_LONG).show()
-            viewModel.resetState()
+        if (editState is AppNetworkState.Success) {
+            onNavigateToHome() // Ini yang melakukan redirect
+            Toast.makeText(context, "Berhasil!", Toast.LENGTH_SHORT).show()
         }
     }
 

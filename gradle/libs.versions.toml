@@ -9,27 +9,19 @@ lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.9.3"
 composeBom = "2024.11.00"
 
-# Firebase
 firebaseBom = "33.7.0"
 
-# Hilt (Dependency Injection)
 hilt = "2.52"
 hiltNavigationCompose = "1.2.0"
 
-# Navigation
 navigationCompose = "2.8.4"
 
-# Networking (Retrofit & OkHttp)
 retrofit = "2.11.0"
 okhttpVersion = "4.12.0"
-
-# Image Loading
 coil = "2.7.0"
 
 # Room Database
 room = "2.6.1"
-
-# KSP (Required for Room & Hilt with Kotlin 2.0+)
 ksp = "2.0.21-1.0.26"
 
 [libraries]
