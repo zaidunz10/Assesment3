@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -50,6 +49,7 @@ fun ProfileScreen(
     onNavigateToDetailReview: (String) -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
+    val isLoggedIn = viewModel.isLoggedIn()
     val context = LocalContext.current
     val profileState by viewModel.profileState.collectAsState()
     val myReviewsState by viewModel.myReviewsState.collectAsState()
@@ -85,7 +85,38 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Bagian Header Profil Komponen Atas
+            if (!isLoggedIn) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+
+                        Text(
+                            text = "Guest User",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(16.dp)
+                        )
+
+                        Button(
+                            onClick = onNavigateToLogin
+                        ) {
+                            Text("Login dengan Google")
+                        }
+                    }
+                }
+
+                return@Scaffold
+
+            }
+
             when (val state = profileState) {
                 is AppNetworkState.Loading -> {
                     Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {

@@ -10,5 +10,6 @@ data class Review(
     val description: String = "",
     val rating: Float = 0f,
     val imageUrl: String = "",
+    val cloudinaryPublicId: String = "",
     val timestamp: Long = System.currentTimeMillis()
 )

@@ -2,7 +2,6 @@ package com.zidansyahidagrifasa0072.assesment3.ui.screen.splash
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,12 +20,10 @@ fun SplashScreen(
     viewModel: SplashViewModel = hiltViewModel()
 ) {
     LaunchedEffect(key1 = true) {
-        delay(2000) // Delay splash screen selama 2 detik
-        if (viewModel.isUserLoggedIn()) {
-            onNavigateToHome()
-        } else {
-            onNavigateToLogin()
-        }
+        delay(2000)
+
+        onNavigateToHome()
+
     }
 
     Box(

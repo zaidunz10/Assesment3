@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.flow.first
 
 @HiltViewModel
 class EditReviewViewModel @Inject constructor(
@@ -28,16 +29,31 @@ class EditReviewViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
-            reviewRepository.updateReview(reviewId, placeName, description, rating, newImageUri, oldImageUrl).collect { state ->
-                _editState.value = state
+            _editState.value = AppNetworkState.Loading
+            try {
+                // Menggunakan .first() memastikan kita hanya mengambil hasil akhir (Success/Error)
+                // lalu coroutine langsung SELESAI, tidak menggantung!
+                val result = reviewRepository.updateReview(reviewId, placeName, description, rating, newImageUri, oldImageUrl).first { state ->
+                    state is AppNetworkState.Success || state is AppNetworkState.Error
+                }
+                _editState.value = result
+            } catch (e: Exception) {
+                _editState.value = AppNetworkState.Error(e.localizedMessage ?: "Terjadi kesalahan")
             }
         }
     }
 
     fun deleteReview(reviewId: String) {
         viewModelScope.launch {
-            reviewRepository.deleteReview(reviewId).collect { state ->
-                _deleteState.value = state
+            _deleteState.value = AppNetworkState.Loading
+            try {
+                // Sama seperti edit, ambil emission pertama yang berupa Success atau Error
+                val result = reviewRepository.deleteReview(reviewId).first { state ->
+                    state is AppNetworkState.Success || state is AppNetworkState.Error
+                }
+                _deleteState.value = result
+            } catch (e: Exception) {
+                _deleteState.value = AppNetworkState.Error(e.localizedMessage ?: "Gagal menghapus review")
             }
         }
     }

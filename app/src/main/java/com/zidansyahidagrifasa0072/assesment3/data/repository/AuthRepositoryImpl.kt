@@ -17,6 +17,9 @@ class AuthRepositoryImpl @Inject constructor(
 
     override val currentUser: com.google.firebase.auth.FirebaseUser?
         get() = firebaseAuth.currentUser
+    override fun isLoggedIn(): Boolean {
+        return firebaseAuth.currentUser != null
+    }
 
     override fun signInWithGoogle(idToken: String): Flow<AppNetworkState<String>> = flow {
         emit(AppNetworkState.Loading)

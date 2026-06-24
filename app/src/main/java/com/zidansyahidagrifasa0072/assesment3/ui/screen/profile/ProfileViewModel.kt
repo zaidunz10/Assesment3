@@ -28,6 +28,9 @@ class ProfileViewModel @Inject constructor(
     init {
         loadProfileAndReviews()
     }
+    fun isLoggedIn(): Boolean {
+        return authRepository.isLoggedIn()
+    }
 
     fun loadProfileAndReviews() {
         viewModelScope.launch {

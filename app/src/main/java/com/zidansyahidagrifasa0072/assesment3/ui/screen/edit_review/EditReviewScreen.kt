@@ -57,7 +57,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.zidansyahidagrifasa0072.assesment3.data.model.Review
 import com.zidansyahidagrifasa0072.assesment3.data.network.AppNetworkState
 import kotlin.math.roundToInt
-
+import kotlinx.coroutines.delay
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditReviewScreen(
@@ -83,7 +83,7 @@ fun EditReviewScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? -> newImageUri = uri }
 
-    // Ambil data awal dari Firestore untuk di-load ke form input
+    // Ambil data awal dari Firestore
     LaunchedEffect(reviewId) {
         FirebaseFirestore.getInstance().collection("reviews").document(reviewId).get()
             .addOnSuccessListener { snapshot ->
@@ -101,24 +101,29 @@ fun EditReviewScreen(
 
     // Handler ketika berhasil/gagal Edit
     LaunchedEffect(editState) {
-        if (editState is AppNetworkState.Success) {
-            Toast.makeText(context, (editState as AppNetworkState.Success).data, Toast.LENGTH_SHORT).show()
-            viewModel.resetState()
+        // Gunakan local variable untuk mengunci state saat masuk, menghindari interupsi saat di-reset
+        val currentState = editState
+        if (currentState is AppNetworkState.Success) {
+            Toast.makeText(context, "Review berhasil diperbarui", Toast.LENGTH_SHORT).show()
+            delay(3000)
             onNavigateToHome()
-        } else if (editState is AppNetworkState.Error) {
-            Toast.makeText(context, (editState as AppNetworkState.Error).message, Toast.LENGTH_SHORT).show()
+            viewModel.resetState() // Reset ditaruh PALING AKHIR setelah navigasi aman berjalan
+        } else if (currentState is AppNetworkState.Error) {
+            Toast.makeText(context, currentState.message, Toast.LENGTH_LONG).show()
             viewModel.resetState()
         }
     }
 
-    // Handler ketika berhasil/gagal Hapus
+// Handler ketika berhasil/gagal Hapus
     LaunchedEffect(deleteState) {
-        if (deleteState is AppNetworkState.Success) {
-            Toast.makeText(context, (deleteState as AppNetworkState.Success).data, Toast.LENGTH_SHORT).show()
-            viewModel.resetState()
+        val currentState = deleteState
+        if (currentState is AppNetworkState.Success) {
+            Toast.makeText(context, "Review berhasil dihapus", Toast.LENGTH_SHORT).show()
+            delay(3000)
             onNavigateToHome()
-        } else if (deleteState is AppNetworkState.Error) {
-            Toast.makeText(context, (deleteState as AppNetworkState.Error).message, Toast.LENGTH_SHORT).show()
+            viewModel.resetState() // Reset ditaruh PALING AKHIR
+        } else if (currentState is AppNetworkState.Error) {
+            Toast.makeText(context, currentState.message, Toast.LENGTH_LONG).show()
             viewModel.resetState()
         }
     }
@@ -129,12 +134,24 @@ fun EditReviewScreen(
                 title = { Text("Edit Review", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Kembali", tint = MaterialTheme.colorScheme.onPrimary)
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Kembali",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.deleteReview(reviewId) }) {
-                        Icon(imageVector = Icons.Default.Delete, contentDescription = "Hapus Review", tint = MaterialTheme.colorScheme.onPrimary)
+                    // Tombol hapus dinonaktifkan jika sedang loading
+                    IconButton(
+                        onClick = { viewModel.deleteReview(reviewId) },
+                        enabled = deleteState !is AppNetworkState.Loading && editState !is AppNetworkState.Loading
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Hapus Review",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -145,9 +162,41 @@ fun EditReviewScreen(
         }
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+
+            // 1. KONDISI AWAL: Ambil data dari Firestore
             if (isLoadingData) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else {
+            }
+
+            // 2. KONDISI SUKSES EDIT
+            else if (editState is AppNetworkState.Success) {
+                Column(
+                    modifier = Modifier.align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Berhasil diperbarui! Mengalihkan...",
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+
+            // 3. KONDISI SUKSES HAPUS
+            else if (deleteState is AppNetworkState.Success) {
+                Column(
+                    modifier = Modifier.align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(text = "Berhasil dihapus! Mengalihkan...", fontWeight = FontWeight.Medium)
+                }
+            }
+
+            // 4. TAMPILAN FORM (Hanya muncul jika TIDAK sedang sukses)
+            else {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -175,7 +224,11 @@ fun EditReviewScreen(
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(imageVector = Icons.Default.Star, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(text = rating.toString(), fontWeight = FontWeight.Bold)
                         }
@@ -200,7 +253,8 @@ fun EditReviewScreen(
                         AsyncImage(
                             model = imageToShow,
                             contentDescription = "Foto Lokasi",
-                            modifier = Modifier.fillMaxWidth().height(200.dp).clip(RoundedCornerShape(8.dp)),
+                            modifier = Modifier.fillMaxWidth().height(200.dp)
+                                .clip(RoundedCornerShape(8.dp)),
                             contentScale = ContentScale.Crop
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -215,14 +269,27 @@ fun EditReviewScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
+                    // Tombol Simpan Perubahan
                     Button(
-                        onClick = { viewModel.updateReview(reviewId, placeName, description, rating, newImageUri, oldImageUrl) },
+                        onClick = {
+                            viewModel.updateReview(
+                                reviewId,
+                                placeName,
+                                description,
+                                rating,
+                                newImageUri,
+                                oldImageUrl
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RoundedCornerShape(8.dp),
-                        enabled = editState !is AppNetworkState.Loading
+                        enabled = editState !is AppNetworkState.Loading && deleteState !is AppNetworkState.Loading
                     ) {
-                        if (editState is AppNetworkState.Loading) {
-                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
+                        if (editState is AppNetworkState.Loading || deleteState is AppNetworkState.Loading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
                         } else {
                             Text("Simpan Perubahan", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                         }

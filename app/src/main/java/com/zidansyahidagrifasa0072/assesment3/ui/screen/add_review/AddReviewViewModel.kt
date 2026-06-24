@@ -1,6 +1,7 @@
 package com.zidansyahidagrifasa0072.assesment3.ui.screen.add_review
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zidansyahidagrifasa0072.assesment3.data.model.PlaceDetailResponse
@@ -35,17 +36,37 @@ class AddReviewViewModel @Inject constructor(
         }
     }
 
-    fun addReview(placeName: String, description: String, rating: Float, imageUri: Uri?) {
+    fun addReview(
+        placeName: String,
+        description: String,
+        rating: Float,
+        imageUri: Uri?
+    ) {
         if (placeName.isBlank() || description.isBlank() || imageUri == null) {
-            _addReviewState.value = AppNetworkState.Error("Nama tempat, deskripsi, dan foto wajib diisi")
+            _addReviewState.value =
+                AppNetworkState.Error(
+                    "Nama tempat, deskripsi, dan foto wajib diisi"
+                )
             return
         }
+
         viewModelScope.launch {
-            reviewRepository.addReview(placeName, description, rating, imageUri).collect { state ->
-                _addReviewState.value = state
-            }
+            reviewRepository
+                .addReview(
+                    placeName,
+                    description,
+                    rating,
+                    imageUri
+                )
+                .collect { state ->
+
+                    Log.d("ADD_REVIEW", state.toString())
+
+                    _addReviewState.value = state
+                }
         }
     }
+
 
     fun resetState() {
         _addReviewState.value = null

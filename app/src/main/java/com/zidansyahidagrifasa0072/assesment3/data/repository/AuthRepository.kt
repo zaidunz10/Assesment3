@@ -9,4 +9,5 @@ interface AuthRepository {
     fun signInWithGoogle(idToken: String): Flow<AppNetworkState<String>>
     fun logoutUser()
     fun getUserProfile(): Flow<AppNetworkState<User>>
+    fun isLoggedIn(): Boolean
 }

@@ -15,7 +15,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
@@ -38,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -46,15 +48,17 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.zidansyahidagrifasa0072.assesment3.data.model.Review
 import com.zidansyahidagrifasa0072.assesment3.data.network.AppNetworkState
-
+import com.zidansyahidagrifasa0072.assesment3.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onNavigateToAddReview: () -> Unit,
     onNavigateToDetailReview: (String) -> Unit,
+    onNavigateToProfile: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val reviewsState by viewModel.reviewsState.collectAsState()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -64,18 +68,49 @@ fun HomeScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                ),
+                actions = {
+                    IconButton(onClick = onNavigateToProfile) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_account_circle_24),
+                            contentDescription = "Ke Halaman Profil",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
             )
         },
 
         floatingActionButton = {
+
+            val currentUser = FirebaseAuth.getInstance().currentUser
+
             FloatingActionButton(
-                onClick = onNavigateToAddReview,
+                onClick = {
+
+                    if (currentUser != null) {
+
+                        onNavigateToAddReview()
+
+                    } else {
+
+                        Toast.makeText(
+                            context,
+                            "Silakan login terlebih dahulu",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                    }
+                },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Tambah Review")
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Tambah Review"
+                )
             }
+
         }
     ) { paddingValues ->
         Box(
@@ -124,10 +159,7 @@ fun HomeScreen(
     }
 }
 fun logoutUser(onLogoutSuccess: () -> Unit) {
-    // 1. Perintah keluar dari Firebase Auth
     FirebaseAuth.getInstance().signOut()
-
-    // 2. Lempar user kembali ke halaman Login (panggil fungsi navigasi kamu)
     onLogoutSuccess()
 }
 @OptIn(ExperimentalMaterial3Api::class)

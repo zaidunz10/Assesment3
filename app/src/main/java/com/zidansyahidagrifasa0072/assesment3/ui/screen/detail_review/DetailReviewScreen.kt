@@ -15,6 +15,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Star
@@ -56,6 +59,9 @@ fun DetailReviewScreen(
     val scrollState = rememberScrollState()
     var review by remember { mutableStateOf<Review?>(null) }
     var isLoading by remember { mutableStateOf(true) }
+    var showDeleteDialog by remember {
+        mutableStateOf(false)
+    }
 
     // Fetch data review secara langsung berdasarkan ID dari Firestore
     LaunchedEffect(reviewId) {
@@ -69,6 +75,56 @@ fun DetailReviewScreen(
                 isLoading = false
             }
     }
+    if (showDeleteDialog) {
+
+        AlertDialog(
+
+            onDismissRequest = {
+                showDeleteDialog = false
+            },
+
+            title = {
+                Text("Hapus Review")
+            },
+
+            text = {
+                Text(
+                    "Apakah Anda yakin ingin menghapus review ini?"
+                )
+            },
+
+            confirmButton = {
+
+                TextButton(
+                    onClick = {
+
+                        review?.let {
+
+                            viewModel.deleteReview(it.id)
+
+                        }
+
+                        showDeleteDialog = false
+
+                        onNavigateBack()
+                    }
+                ) {
+                    Text("Hapus")
+                }
+            },
+
+            dismissButton = {
+
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                    }
+                ) {
+                    Text("Batal")
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -80,14 +136,37 @@ fun DetailReviewScreen(
                     }
                 },
                 actions = {
-                    // Munculkan tombol edit HANYA jika yang login adalah pemilik review ini
+
                     review?.let {
+
                         if (viewModel.isReviewOwner(it.userId)) {
-                            IconButton(onClick = { onNavigateToEditReview(it.id) }) {
-                                Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit Review", tint = MaterialTheme.colorScheme.onPrimary)
+
+                            IconButton(
+                                onClick = {
+                                    onNavigateToEditReview(it.id)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Edit Review",
+                                    tint = MaterialTheme.colorScheme.onPrimary
+                                )
+                            }
+
+                            IconButton(
+                                onClick = {
+                                    showDeleteDialog = true
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Hapus Review",
+                                    tint = MaterialTheme.colorScheme.onPrimary
+                                )
                             }
                         }
                     }
+
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,

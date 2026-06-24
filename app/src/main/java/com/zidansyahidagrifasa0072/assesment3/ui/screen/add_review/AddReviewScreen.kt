@@ -54,11 +54,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.zidansyahidagrifasa0072.assesment3.data.network.AppNetworkState
 import kotlin.math.roundToInt
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddReviewScreen(
     onNavigateBack: () -> Unit,
+onNavigateToHome: () -> Unit,
     viewModel: AddReviewViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -78,17 +80,36 @@ fun AddReviewScreen(
         imageUri = uri
     }
 
+
     LaunchedEffect(addReviewState) {
-        when (addReviewState) {
+        when (val state = addReviewState) {
+
             is AppNetworkState.Success -> {
-                Toast.makeText(context, (addReviewState as AppNetworkState.Success<String>).data, Toast.LENGTH_SHORT).show()
+
+                Toast.makeText(
+                    context,
+                    "Review berhasil diposting",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                delay(3000)
+
+                onNavigateToHome()
+
                 viewModel.resetState()
-                onNavigateBack()
             }
+
             is AppNetworkState.Error -> {
-                Toast.makeText(context, (addReviewState as AppNetworkState.Error).message, Toast.LENGTH_LONG).show()
+
+                Toast.makeText(
+                    context,
+                    state.message,
+                    Toast.LENGTH_LONG
+                ).show()
+
                 viewModel.resetState()
             }
+
             else -> {}
         }
     }
